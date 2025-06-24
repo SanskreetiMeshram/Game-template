@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🚦 Crossy Road</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      background: linear-gradient(to top, #a8edea, #fed6e3);
+      margin: 0;
+      padding: 10px;
+    }
+
+    h1 {
+      margin-top: 10px;
+      font-size: 2rem;
+    }
+
+    .game-board {
+      width: 300px;
+      height: 500px;
+      margin: 20px auto;
+      position: relative;
+      background-color: #dff9fb;
+      border: 3px solid #000;
+      overflow: hidden;
+    }
+
+    .player {
+      width: 30px;
+      height: 30px;
+      background-color: #ff7675;
+      position: absolute;
+      bottom: 0;
+      left: 135px;
+      border-radius: 5px;
+    }
+
+    .car {
+      width: 60px;
+      height: 30px;
+      background-color: #00a8ff;
+      position: absolute;
+      top: 0;
+      border-radius: 5px;
+    }
+
+    .result-box {
+      display: none;
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 3px solid #222;
+      border-radius: 15px;
+      padding: 25px 40px;
+      z-index: 10;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .result-box h2 {
+      margin-top: 0;
+    }
+
+    .result-box button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #55efc4;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .result-box button:hover {
+      background-color: #00cec9;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚧 Crossy Road</h1>
+  <p>Use arrow keys to move. Score: <span id="score">0</span></p>
+
+  <div class="game-board" id="gameBoard">
+    <div class="player" id="player"></div>
+  </div>
+
+  <!-- Result Box -->
+  <div class="result-box" id="resultBox">
+    <h2 id="resultTitle">Game Over</h2>
+    <p>Your score: <span id="finalScore"></span></p>
+    <button onclick="restartGame()">🔁 Play Again</button>
+  </div>
+
+  <script>
+    const gameBoard = document.getElementById("gameBoard");
+    const player = document.getElementById("player");
+    const scoreDisplay = document.getElementById("score");
+    const resultBox = document.getElementById("resultBox");
+    const resultTitle = document.getElementById("resultTitle");
+    const finalScore = document.getElementById("finalScore");
+
+    let playerX = 135;
+    let playerY = 0;
+    let score = 0;
+    let carInterval;
+    let cars = [];
+    let gameOver = false;
+
+    document.addEventListener("keydown", movePlayer);
+
+    function movePlayer(e) {
+      if (gameOver) return;
+
+      if (e.key === "ArrowLeft" && playerX > 0) playerX -= 15;
+      if (e.key === "ArrowRight" && playerX < 270) playerX += 15;
+      if (e.key === "ArrowUp" && playerY < 470) {
+        playerY += 30;
+        score++;
+        scoreDisplay.textContent = score;
+
+        if (playerY >= 480) {
+          showResult("🎉 You Win!");
+        }
+      }
+      if (e.key === "ArrowDown" && playerY > 0) playerY -= 30;
+      updatePlayer();
+    }
+
+    function updatePlayer() {
+      player.style.left = `${playerX}px`;
+      player.style.bottom = `${playerY}px`;
+    }
+
+    function createCar() {
+      const car = document.createElement("div");
+      car.classList.add("car");
+      car.style.top = `${Math.floor(Math.random() * 16) * 30}px`;
+      car.style.left = "-60px";
+
+      gameBoard.appendChild(car);
+      cars.push(car);
+    }
+
+    function moveCars() {
+      if (gameOver) return;
+
+      cars.forEach((car, index) => {
+        let left = parseInt(car.style.left);
+        if (left > 320) {
+          car.remove();
+          cars.splice(index, 1);
+        } else {
+          car.style.left = `${left + 5}px`;
+
+          const carRect = car.getBoundingClientRect();
+          const playerRect = player.getBoundingClientRect();
+
+          if (
+            playerRect.top < carRect.bottom &&
+            playerRect.bottom > carRect.top &&
+            playerRect.left < carRect.right &&
+            playerRect.right > carRect.left
+          ) {
+            showResult("💥 Game Over!");
+          }
+        }
+      });
+    }
+
+    function startGame() {
+      updatePlayer();
+      carInterval = setInterval(createCar, 1000);
+      setInterval(moveCars, 50);
+    }
+
+    function showResult(titleText) {
+      gameOver = true;
+      clearInterval(carInterval);
+      document.removeEventListener("keydown", movePlayer);
+
+      resultTitle.textContent = titleText;
+      finalScore.textContent = score;
+      resultBox.style.display = "block";
+    }
+
+    function restartGame() {
+      location.reload();
+    }
+
+    startGame();
+  </script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Car Race Game</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background: #111;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #gameArea {
+      position: relative;
+      width: 400px;
+      height: 600px;
+      background: gray;
+      overflow: hidden;
+      border: 4px solid #fff;
+      margin-top: 20px;
+    }
+    .car {
+      width: 40px;
+      height: 60px;
+      background: red;
+      position: absolute;
+      bottom: 100px;
+      left: 180px;
+    }
+    .enemy {
+      width: 40px;
+      height: 60px;
+      background: black;
+      position: absolute;
+    }
+    .roadLine {
+      width: 10px;
+      height: 60px;
+      background: white;
+      position: absolute;
+      left: 195px;
+    }
+    .score {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: yellow;
+      padding: 5px 15px;
+      border: 2px solid black;
+      font-weight: bold;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 24px;
+      color: white;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="color: white; margin-top: 20px;">🚗 Car Racing Challenge</h1>
+  <div id="gameArea"></div>
+  <div id="result"></div>
+
+  <script>
+    const gameArea = document.getElementById("gameArea");
+    const resultDisplay = document.getElementById("result");
+
+    let player = { speed: 5, score: 0, x: 180 };
+    let keys = {};
+    let gameRunning = true;
+    let startTime;
+
+    document.addEventListener("keydown", (e) => keys[e.key] = true);
+    document.addEventListener("keyup", (e) => keys[e.key] = false);
+
+    function startGame() {
+      gameArea.innerHTML = `<div class="score" id="score">Score: 0</div><div class="car" id="car"></div>`;
+      resultDisplay.innerHTML = "";
+      player = { speed: 5, score: 0, x: 180 };
+      gameRunning = true;
+      startTime = Date.now();
+
+      for (let i = 0; i < 5; i++) {
+        let line = document.createElement("div");
+        line.classList.add("roadLine");
+        line.style.top = (i * 120) + "px";
+        gameArea.appendChild(line);
+      }
+
+      for (let i = 0; i < 3; i++) {
+        let enemy = document.createElement("div");
+        enemy.classList.add("enemy");
+        enemy.style.top = (i * -200) + "px";
+        enemy.style.left = Math.floor(Math.random() * 360) + "px";
+        gameArea.appendChild(enemy);
+      }
+
+      window.requestAnimationFrame(gamePlay);
+    }
+
+    function moveLines() {
+      let lines = document.querySelectorAll(".roadLine");
+      lines.forEach((line) => {
+        let top = parseInt(line.style.top);
+        top += player.speed;
+        if (top > 600) top = -60;
+        line.style.top = top + "px";
+      });
+    }
+
+    function moveEnemies(car) {
+      let enemies = document.querySelectorAll(".enemy");
+      enemies.forEach((enemy) => {
+        let top = parseInt(enemy.style.top);
+        top += player.speed;
+        if (top > 600) {
+          top = -200;
+          enemy.style.left = Math.floor(Math.random() * 360) + "px";
+        }
+        enemy.style.top = top + "px";
+
+        if (isCollide(car, enemy)) {
+          endGame();
+        }
+      });
+    }
+
+    function isCollide(a, b) {
+      const aRect = a.getBoundingClientRect();
+      const bRect = b.getBoundingClientRect();
+      return !(
+        aRect.bottom < bRect.top ||
+        aRect.top > bRect.bottom ||
+        aRect.right < bRect.left ||
+        aRect.left > bRect.right
+      );
+    }
+
+    function gamePlay() {
+      if (!gameRunning) return;
+
+      const car = document.getElementById("car");
+
+      moveLines();
+      moveEnemies(car);
+
+      if (keys["ArrowLeft"] && player.x > 0) player.x -= player.speed;
+      if (keys["ArrowRight"] && player.x < 360) player.x += player.speed;
+
+      car.style.left = player.x + "px";
+      player.score++;
+
+      let elapsed = Math.floor((Date.now() - startTime) / 1000);
+      document.getElementById("score").innerText = `Score: ${player.score} | Time: ${elapsed}s`;
+
+      window.requestAnimationFrame(gamePlay);
+    }
+
+    function endGame() {
+      gameRunning = false;
+      let elapsed = Math.floor((Date.now() - startTime) / 1000);
+      resultDisplay.innerHTML = `<strong>🏁 Final Score: ${player.score}<br>⏱️ Time: ${elapsed} seconds</strong><br>Restarting in 3s...`;
+      setTimeout(startGame, 3000);
+    }
+
+    window.onload = startGame;
+  </script>
+</body>
+</html>
