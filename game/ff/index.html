@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>🔥 Mini Shoot Game</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #2d3436;
+      color: white;
+      text-align: center;
+    }
+
+    canvas {
+      background: #74b9ff;
+      display: block;
+      margin: 20px auto;
+      border: 3px solid #000;
+    }
+
+    #score, #health {
+      font-size: 20px;
+    }
+
+    #gameOver {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #d63031;
+      padding: 20px 40px;
+      border-radius: 10px;
+      font-size: 24px;
+      display: none;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔥 Mini Shoot (2D)</h1>
+  <p id="score">Score: 0</p>
+  <p id="health">Health: 100</p>
+  <canvas id="gameCanvas" width="500" height="400"></canvas>
+  <div id="gameOver">💀 Game Over<br><button onclick="location.reload()">🔁 Restart</button></div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let player = { x: 250, y: 200, size: 20, speed: 3 };
+    let bullets = [];
+    let enemies = [];
+    let keys = {};
+    let score = 0;
+    let health = 100;
+    let spawnInterval = 1500;
+
+    document.getElementById("score").textContent = `Score: ${score}`;
+    document.getElementById("health").textContent = `Health: ${health}`;
+
+    document.addEventListener("keydown", (e) => (keys[e.key] = true));
+    document.addEventListener("keyup", (e) => (keys[e.key] = false));
+
+    document.addEventListener("click", () => {
+      bullets.push({ x: player.x, y: player.y, radius: 5 });
+    });
+
+    function spawnEnemy() {
+      let side = Math.random() < 0.5 ? "left" : "right";
+      let y = Math.random() * canvas.height;
+      let x = side === "left" ? 0 : canvas.width;
+      enemies.push({ x, y, size: 20, speed: 1.5 });
+    }
+
+    setInterval(spawnEnemy, spawnInterval);
+
+    function update() {
+      // Move player
+      if (keys["ArrowUp"] || keys["w"]) player.y -= player.speed;
+      if (keys["ArrowDown"] || keys["s"]) player.y += player.speed;
+      if (keys["ArrowLeft"] || keys["a"]) player.x -= player.speed;
+      if (keys["ArrowRight"] || keys["d"]) player.x += player.speed;
+
+      player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+      player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+
+      // Move bullets
+      bullets.forEach((b, i) => {
+        b.x += 5;
+        if (b.x > canvas.width) bullets.splice(i, 1);
+      });
+
+      // Move enemies
+      enemies.forEach((e, i) => {
+        let dx = player.x - e.x;
+        let dy = player.y - e.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+        e.x += (dx / dist) * e.speed;
+        e.y += (dy / dist) * e.speed;
+
+        // Collision with player
+        if (
+          Math.abs(e.x - player.x) < player.size &&
+          Math.abs(e.y - player.y) < player.size
+        ) {
+          enemies.splice(i, 1);
+          health -= 10;
+          if (health <= 0) endGame();
+        }
+
+        // Bullet hit
+        bullets.forEach((b, j) => {
+          if (
+            Math.abs(e.x - b.x) < e.size &&
+            Math.abs(e.y - b.y) < e.size
+          ) {
+            enemies.splice(i, 1);
+            bullets.splice(j, 1);
+            score++;
+          }
+        });
+      });
+
+      document.getElementById("score").textContent = `Score: ${score}`;
+      document.getElementById("health").textContent = `Health: ${health}`;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw player
+      ctx.fillStyle = "#d63031";
+      ctx.fillRect(player.x, player.y, player.size, player.size);
+
+      // Draw bullets
+      ctx.fillStyle = "#fdcb6e";
+      bullets.forEach((b) => {
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Draw enemies
+      ctx.fillStyle = "#0984e3";
+      enemies.forEach((e) => {
+        ctx.fillRect(e.x, e.y, e.size, e.size);
+      });
+    }
+
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    function endGame() {
+      document.getElementById("gameOver").style.display = "block";
+    }
+
+    loop();
+  </script>
+</body>
+</html>

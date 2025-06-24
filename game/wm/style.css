@@ -1,0 +1,54 @@
+body {
+    text-align: center;
+    font-family: 'Comic Sans MS', cursive;
+    background: linear-gradient(to right, #89f7fe, #66a6ff);
+    margin: 0;
+    padding: 20px;
+    color: #333;
+  }
+  
+  h1, h2, h3 {
+    margin: 10px;
+  }
+  
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-gap: 15px;
+    justify-content: center;
+    margin: 20px auto;
+  }
+  
+  .hole {
+    width: 100px;
+    height: 100px;
+    background-color: #2f3640;
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .hole.mole {
+    background-image: url('../assets/images/mole.png');
+    background-size: cover;
+    background-position: center;
+    background-color: #44bd32;
+  }
+  
+  button {
+    margin-top: 20px;
+    padding: 10px 25px;
+    font-size: 16px;
+    border: none;
+    background-color: #ff7675;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  button:hover {
+    background-color: #e84393;
+  }
+  
