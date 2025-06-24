@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Two Player Quiz Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>🧠 Two Player Quiz</h1>
+    <h2 id="turn">Player 1's Turn</h2>
+    <div id="questionBox">
+      <h3 id="question">Loading...</h3>
+      <div id="options"></div>
+    </div>
+    <div id="scoreBoard">
+      <p>Player 1 Score: <span id="score1">0</span></p>
+      <p>Player 2 Score: <span id="score2">0</span></p>
+    </div>
+    <div id="result"></div>
+    <button onclick="startGame()">🔁 Restart</button>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

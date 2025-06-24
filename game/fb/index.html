@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Easy Flappy Bird</title>
+  <style>
+    body {
+      margin: 0;
+      background: #70c5ce;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      margin: auto;
+      background: #70c5ce;
+      border: 4px solid #000;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let bird = {
+      x: 100,
+      y: 250,
+      width: 40,
+      height: 40,
+      gravity: 0.3,   // easier fall
+      lift: -9,       // stronger jump
+      velocity: 0
+    };
+
+    let pipes = [];
+    let score = 0;
+    let gameOver = false;
+
+    function drawBird() {
+      ctx.fillStyle = "yellow";
+      ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+    }
+
+    function drawPipe(pipe) {
+      ctx.fillStyle = "green";
+      ctx.fillRect(pipe.x, 0, pipe.width, pipe.top);
+      ctx.fillRect(pipe.x, pipe.bottom, pipe.width, canvas.height - pipe.bottom);
+    }
+
+    function updateBird() {
+      bird.velocity += bird.gravity;
+      bird.y += bird.velocity;
+
+      if (bird.y + bird.height > canvas.height || bird.y < 0) gameOver = true;
+    }
+
+    function addPipe() {
+      const gap = 200; // bigger gap
+      const top = Math.random() * 250 + 20;
+      const bottom = top + gap;
+      pipes.push({ x: canvas.width, width: 60, top, bottom });
+    }
+
+    function updatePipes() {
+      for (let i = 0; i < pipes.length; i++) {
+        const pipe = pipes[i];
+        pipe.x -= 2; // slower
+
+        // Collision
+        if (
+          bird.x < pipe.x + pipe.width &&
+          bird.x + bird.width > pipe.x &&
+          (bird.y < pipe.top || bird.y + bird.height > pipe.bottom)
+        ) {
+          gameOver = true;
+        }
+
+        // Score
+        if (pipe.x + pipe.width === bird.x) score++;
+
+        // Remove off-screen pipes
+        if (pipe.x + pipe.width < 0) pipes.splice(i, 1);
+      }
+    }
+
+    function drawScore() {
+      ctx.fillStyle = "black";
+      ctx.font = "24px Arial";
+      ctx.fillText("Score: " + score, 20, 40);
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space") bird.velocity = bird.lift;
+    });
+
+    setInterval(addPipe, 1800);
+
+    function gameLoop() {
+      if (gameOver) {
+        ctx.fillStyle = "red";
+        ctx.font = "36px Arial";
+        ctx.fillText("Game Over!", 300, 300);
+        ctx.fillText("Score: " + score, 320, 350);
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBird();
+      updateBird();
+      pipes.forEach(drawPipe);
+      updatePipes();
+      drawScore();
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
